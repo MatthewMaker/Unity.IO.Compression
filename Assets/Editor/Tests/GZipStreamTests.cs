@@ -73,22 +73,34 @@ public class GZipStreamTests : BaseStreamTests
         }
     }
 
-    [Test, ExpectedException(typeof(ArgumentException))]
+    [Test]
+#if !UNITY_5_6_OR_NEWER
+	[ExpectedException(typeof(ArgumentException))]
+#endif
     public void LeaveOpenFalse()
     {
-        using (var memoryStream = new MemoryStream())
-        {
-            using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress, false))
-            using (var writer = new StreamWriter(gzipStream))
-            {
-                writer.Write(Text);
-            }
+	    Action testAction = () =>
+	    {
+		    using (var memoryStream = new MemoryStream())
+		    {
+			    using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress, false))
+			    using (var writer = new StreamWriter(gzipStream))
+			    {
+				    writer.Write(Text);
+			    }
 
-            using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress, false))
-            using (var writer = new StreamWriter(gzipStream))
-            {
-                writer.Write(Text);
-            }
-        }
+			    using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress, false))
+			    using (var writer = new StreamWriter(gzipStream))
+			    {
+				    writer.Write(Text);
+			    }
+		    }
+		};
+
+#if UNITY_5_6_OR_NEWER
+		Assert.That(testAction, Throws.TypeOf<ArgumentException>());
+#else
+		testAction();
+#endif
     }
 }

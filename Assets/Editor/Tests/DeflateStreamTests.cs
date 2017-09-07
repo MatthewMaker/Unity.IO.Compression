@@ -97,22 +97,35 @@ public class DeflateStreamTests : BaseStreamTests
         }
     }
 
-    [Test, ExpectedException(typeof(ArgumentException))]
-    public void LeaveOpenFalse()
-    {
-        using (var memoryStream = new MemoryStream())
-        {
-            using (var deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress, false))
-            using (var writer = new StreamWriter(deflateStream))
-            {
-                writer.Write(Text);
-            }
+	
+	[Test]
+	// The ExpectedExceptionAttribute has been replaced by Assert.That in newer versions of NUnit
+#if !UNITY_5_6_OR_NEWER
+	[ExpectedException(typeof(ArgumentException))]
+#endif
+	public void LeaveOpenFalse()
+	{
+		Action testAction = () =>
+		{
+			using (var memoryStream = new MemoryStream())
+			{
+				using (var deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress, false))
+				using (var writer = new StreamWriter(deflateStream))
+				{
+					writer.Write(Text);
+				}
 
-            using (var deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress, false))
-            using (var writer = new StreamWriter(deflateStream))
-            {
-                writer.Write(Text);
-            }
-        }
-    }
+				using (var deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress, false))
+				using (var writer = new StreamWriter(deflateStream))
+				{
+					writer.Write(Text);
+				}
+			}
+		};
+#if UNITY_5_6_OR_NEWER
+		Assert.That(testAction, Throws.TypeOf<ArgumentException>());
+#else
+		testAction();
+#endif
+	}
 }
